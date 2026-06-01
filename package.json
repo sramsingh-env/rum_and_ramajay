@@ -1,0 +1,15 @@
+{
+  "name": "rum-and-ramajay",
+  "version": "1.0.0",
+  "description": "Rum & Ramajay card game website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.106.2",
+    "dotenv": "^17.4.2",
+    "express": "^4.18.2",
+    "express-session": "^1.19.0"
+  }
+}

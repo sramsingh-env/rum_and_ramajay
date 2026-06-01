@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login — Rum & Ramajay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: linear-gradient(180deg, #F5C000 0%, #E07500 40%, #1ABDB5 80%, #0E8A88 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Georgia', serif;
+    }
+
+    .login-card {
+      background: rgba(255,255,255,0.92);
+      border: 2px solid #633b25;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      padding: 48px 40px;
+      width: 90%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .logo-img {
+      width: 200px;
+      height: auto;
+      filter: drop-shadow(2px 3px 6px rgba(0,0,0,0.3));
+    }
+
+    h1 {
+      font-family: 'Lilita One', sans-serif;
+      font-size: 1.5rem;
+      color: #5a2000;
+      text-align: center;
+    }
+
+    .form-group {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #5a2000;
+    }
+
+    input[type="password"] {
+      padding: 10px 14px;
+      font-size: 1rem;
+      font-family: 'Georgia', serif;
+      border: 2px solid #c0845a;
+      border-radius: 8px;
+      background: #fffaf4;
+      color: #1a0500;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+
+    input[type="password"]:focus { border-color: #7A4220; }
+
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      font-family: 'Lilita One', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 0.06em;
+      color: #1a0500;
+      background: linear-gradient(135deg, #F5C000 0%, #E07500 100%);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: filter 0.15s, transform 0.15s;
+    }
+
+    .btn-login:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .btn-login:active { transform: translateY(0); }
+    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .error-msg {
+      color: #c0000a;
+      font-size: 0.9rem;
+      text-align: center;
+      min-height: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <img src="images/vectorized.svg" alt="Rum & Ramajay" class="logo-img" />
+    <h1>Admin Login</h1>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" autofocus />
+    </div>
+    <p class="error-msg" id="errorMsg"></p>
+    <button class="btn-login" id="btnLogin">Login</button>
+  </div>
+
+  <script>
+    async function login() {
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('btnLogin');
+      const errorMsg = document.getElementById('errorMsg');
+
+      btn.disabled = true;
+      btn.textContent = 'Logging in…';
+      errorMsg.textContent = '';
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password }),
+        });
+
+        if (res.ok) {
+          window.location.href = '/admin.html';
+        } else {
+          const data = await res.json();
+          errorMsg.textContent = data.error || 'Incorrect password.';
+          btn.disabled = false;
+          btn.textContent = 'Login';
+        }
+      } catch {
+        errorMsg.textContent = 'Could not connect to server.';
+        btn.disabled = false;
+        btn.textContent = 'Login';
+      }
+    }
+
+    document.getElementById('btnLogin').addEventListener('click', login);
+    document.getElementById('password').addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
+  </script>
+</body>
+</html>

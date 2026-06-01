@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rum &amp; Ramajay — A Drinking Card Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0d0805;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Progress bar ── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px; width: 100%;
+      background: linear-gradient(90deg, #2a7a6e, #c9a227);
+      transform-origin: left center;
+      z-index: 100;
+    }
+
+    /* ── Scroll container ── */
+    #scroll-wrapper { height: 600vh; }
+
+    /* ── Sticky scene ── */
+    #scene {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    /* ── Photo layer ── */
+    #photo-layer {
+      position: absolute; inset: 0; z-index: 1;
+    }
+    #hero-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center 30%;
+      transform-origin: 62% 22%;
+      display: block;
+    }
+    #photo-vignette {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 50% 40% at 62% 22%, transparent 0%, rgba(5,2,0,0.97) 70%);
+      opacity: 0;
+    }
+    #photo-darken {
+      position: absolute; inset: 0;
+      background: #0d0805;
+      opacity: 0;
+    }
+
+    /* ── Title ── */
+    #title-overlay {
+      position: absolute;
+      bottom: 10%; left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      text-align: center;
+      white-space: nowrap;
+    }
+    #title-overlay h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(42px, 9vw, 96px);
+      color: #fff;
+      line-height: 1;
+      text-shadow: 0 4px 30px rgba(0,0,0,0.9);
+    }
+    .gold { color: #c9a227; }
+    #title-overlay p {
+      font-size: clamp(9px, 1.4vw, 13px);
+      letter-spacing: 5px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 10px;
+      text-transform: uppercase;
+    }
+
+    /* ── Scroll hint ── */
+    #scroll-hint {
+      position: absolute;
+      bottom: 3%; left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      color: rgba(255,255,255,0.35);
+      font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+    }
+    .scroll-line {
+      width: 1px; height: 36px;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.4));
+      animation: pulseLine 2s ease-in-out infinite;
+    }
+    @keyframes pulseLine {
+      0%,100% { opacity: 0.4; transform: scaleY(0.7); }
+      50%      { opacity: 1;   transform: scaleY(1);   }
+    }
+
+    /* ── Ambient glow ── */
+    #glow {
+      position: absolute; inset: 0; z-index: 2;
+      background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(42,122,110,0.12) 0%, transparent 70%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── 3-D stage ── */
+    #stage {
+      position: absolute; inset: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Game box ── */
+    #box-wrapper {
+      position: relative;
+      width: 180px; height: 220px;
+    }
+    #box-body {
+      position: absolute;
+      bottom: 0; left: 0; right: 0; height: 200px;
+      border-radius: 5px 5px 4px 4px;
+      background: linear-gradient(160deg, #2e8b7c 0%, #1e6b5e 45%, #134e44 100%);
+      box-shadow: 0 30px 90px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    #box-body::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, transparent, #c9a227 30%, #f0d060 50%, #c9a227 70%, transparent);
+    }
+    #box-body::after {
+      content: '';
+      position: absolute; inset: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 3px;
+    }
+    .box-brand { position: relative; z-index: 1; text-align: center; }
+    .box-brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 21px; color: #fff; line-height: 1.15;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .box-amp { color: #d4b04a; }
+    .box-tag {
+      display: block;
+      font-size: 7px; letter-spacing: 2.5px;
+      color: rgba(255,255,255,0.45); margin-top: 6px;
+    }
+    #box-lid {
+      position: absolute;
+      top: 0; left: -3px; right: -3px; height: 56px;
+      border-radius: 5px 5px 0 0;
+      background: linear-gradient(160deg, #3a9b8a 0%, #2a7a6e 60%, #1e6059 100%);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.2);
+    }
+    #box-lid::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.08), transparent 60%);
+      border-radius: inherit;
+    }
+
+    /* ── Flying cards ── */
+    #cards-container {
+      position: absolute; inset: 0; z-index: 8; pointer-events: none;
+    }
+    .bg-card {
+      position: absolute;
+      width: 76px; height: 108px;
+      top: 50%; left: 50%;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #1e7a6e 0%, #0c4f42 100%);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      box-shadow: 0 10px 35px rgba(0,0,0,0.7);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 9px; color: rgba(255,255,255,0.2); letter-spacing: 1px;
+    }
+    .bg-card::before {
+      content: '';
+      position: absolute; inset: 5px;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 3px;
+    }
+
+    /* ── Featured card ── */
+    #featured-card {
+      position: absolute;
+      top: 45%; left: 50%;
+      z-index: 20;
+      width: 200px; height: 285px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #f9eedd 0%, #edddb8 70%, #e3cf9e 100%);
+      box-shadow:
+        0 50px 140px rgba(0,0,0,0.95),
+        0 0 80px rgba(42,122,110,0.2),
+        0 0 0 1px rgba(200,160,60,0.25);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px 18px;
+      overflow: hidden;
+    }
+    #featured-card::before, #featured-card::after {
+      content: '';
+      position: absolute;
+      width: 28px; height: 28px;
+      border-color: rgba(42,122,110,0.35);
+      border-style: solid;
+    }
+    #featured-card::before {
+      top: 10px; left: 10px;
+      border-width: 2px 0 0 2px;
+      border-radius: 3px 0 0 0;
+    }
+    #featured-card::after {
+      bottom: 10px; right: 10px;
+      border-width: 0 2px 2px 0;
+      border-radius: 0 0 3px 0;
+    }
+    .feat-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 8px; letter-spacing: 2.5px;
+      color: rgba(30,55,45,0.4);
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+    .feat-divider {
+      width: 44px; height: 1.5px;
+      background: linear-gradient(90deg, transparent, #2a7a6e, transparent);
+      margin: 12px 0;
+    }
+    .feat-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 27px; color: #1a0e00;
+      text-align: center; line-height: 1.25;
+    }
+    .feat-sub {
+      font-size: 9px; letter-spacing: 2px;
+      color: rgba(26,14,0,0.35);
+      margin-top: 14px; text-transform: uppercase;
+    }
+
+    /* ── Buy button ── */
+    #buy-btn {
+      position: absolute;
+      bottom: 9%; left: 50%;
+      z-index: 25;
+      padding: 16px 56px;
+      border: none; border-radius: 50px;
+      background: linear-gradient(135deg, #2e8b7c 0%, #1a5c52 100%);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px; font-weight: 600;
+      letter-spacing: 3px; text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 14px 50px rgba(42,122,110,0.55), 0 2px 8px rgba(0,0,0,0.4);
+      transition: box-shadow 0.25s, transform 0.25s;
+    }
+    #buy-btn:hover {
+      box-shadow: 0 20px 65px rgba(42,122,110,0.75), 0 4px 12px rgba(0,0,0,0.5);
+      transform: translateX(-50%) scale(1.04) !important;
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<div id="scroll-wrapper">
+  <section id="scene">
+
+    <!-- Photo background -->
+    <div id="photo-layer">
+      <img src="./images/concept.jpeg" id="hero-img" alt="Rum &amp; Ramajay" />
+      <div id="photo-vignette"></div>
+      <div id="photo-darken"></div>
+    </div>
+
+    <!-- Ambient glow -->
+    <div id="glow"></div>
+
+    <!-- Title -->
+    <div id="title-overlay">
+      <h1>Rum <span class="gold">&amp;</span><br>Ramajay</h1>
+      <p>A Drinking Card Game</p>
+    </div>
+
+    <!-- Scroll hint -->
+    <div id="scroll-hint">
+      <div class="scroll-line"></div>
+      <span>Scroll</span>
+    </div>
+
+    <!-- Game box -->
+    <div id="stage">
+      <div id="box-wrapper">
+        <div id="box-lid"></div>
+        <div id="box-body">
+          <div class="box-brand">
+            <div class="box-brand-name">RUM <span class="box-amp">&amp;</span><br>RAMAJAY</div>
+            <span class="box-tag">A DRINKING CARD GAME</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flying cards -->
+    <div id="cards-container">
+      <div class="bg-card" id="bg-card-1">R&amp;R</div>
+      <div class="bg-card" id="bg-card-2">R&amp;R</div>
+      <div class="bg-card" id="bg-card-3">R&amp;R</div>
+      <div class="bg-card" id="bg-card-4">R&amp;R</div>
+      <div class="bg-card" id="bg-card-5">R&amp;R</div>
+      <div class="bg-card" id="bg-card-6">R&amp;R</div>
+    </div>
+
+    <!-- Featured card -->
+    <div id="featured-card">
+      <div class="feat-brand">Rum &amp; Ramajay</div>
+      <div class="feat-divider"></div>
+      <div class="feat-text">Buy the<br>mc game</div>
+      <div class="feat-divider"></div>
+      <div class="feat-sub">18+</div>
+    </div>
+
+    <!-- Buy Now -->
+    <button id="buy-btn">Buy Now</button>
+
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ── Initial states ─────────────────────────────────── */
+  gsap.set('#box-wrapper',    { opacity: 0, scale: 0.35, y: 90 });
+  gsap.set('#box-lid',        { rotationX: 0, transformOrigin: '50% 0%', transformPerspective: 700 });
+  gsap.set('.bg-card',        { opacity: 0, xPercent: -50, yPercent: -50 });
+  gsap.set('#featured-card',  { opacity: 0, scale: 0, xPercent: -50, yPercent: -50, rotationY: -20 });
+  gsap.set('#buy-btn',        { opacity: 0, xPercent: -50, y: 40 });
+  gsap.set('#progress-bar',   { scaleX: 0 });
+
+  /* ── Progress bar ───────────────────────────────────── */
+  ScrollTrigger.create({
+    trigger: '#scroll-wrapper',
+    start: 'top top',
+    end: 'bottom bottom',
+    onUpdate: (self) => gsap.set('#progress-bar', { scaleX: self.progress }),
+  });
+
+  /* ── Main timeline ──────────────────────────────────── */
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#scroll-wrapper',
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 1.8,
+    }
+  });
+
+  /* Phase 1 — static hold (0–12 %) */
+  tl.to({}, { duration: 1.2 });
+
+  /* Phase 2 — zoom photo toward box, blur, vignette (12–38 %) */
+  tl.to('#hero-img', {
+        scale: 2.8,
+        filter: 'blur(10px) brightness(0.45)',
+        duration: 2.6, ease: 'none',
+      }, '<')
+    .to('#photo-vignette', { opacity: 1, duration: 2, ease: 'power2.in' }, '<')
+    .to('#title-overlay',  { opacity: 0, y: -30, duration: 1.2, ease: 'power2.in' }, '<')
+    .to('#scroll-hint',    { opacity: 0, duration: 0.8 }, '<');
+
+  /* Phase 3 — blackout + box materialises (38–54 %) */
+  tl.to('#photo-darken', { opacity: 1, duration: 1.2, ease: 'power2.inOut' })
+    .to('#glow',         { opacity: 1, duration: 0.8 }, '<+=0.4')
+    .to('#box-wrapper',  {
+          opacity: 1, scale: 1, y: 0,
+          duration: 1, ease: 'back.out(1.6)',
+        }, '<+=0.3');
+
+  /* Phase 4 — pause on closed box (54–62 %) */
+  tl.to({}, { duration: 0.8 });
+
+  /* Phase 5 — lid lifts open (62–74 %) */
+  tl.to('#box-lid', { rotationX: -148, duration: 1.2, ease: 'power3.inOut' });
+
+  /* Phase 6 — cards explode out (74–86 %) */
+  tl.to('.bg-card', { opacity: 1, duration: 0.3, stagger: 0.05 }, '+=0.2');
+
+  [
+    ['#bg-card-1', -260, -240, -52],
+    ['#bg-card-2',  240, -220,  44],
+    ['#bg-card-3', -350,  -40, -24],
+    ['#bg-card-4',  320,  -60,  28],
+    ['#bg-card-5', -100, -320,   8],
+    ['#bg-card-6',  130, -300, -18],
+  ].forEach(([sel, x, y, rot], i) => {
+    tl.to(sel, { x, y, rotation: rot, duration: 0.7, ease: 'power3.out' },
+      i === 0 ? '<' : '<+=0.08');
+  });
+
+  tl.to('#box-wrapper', { opacity: 0, scale: 0.85, duration: 0.5, ease: 'power2.in' }, '<+=0.4');
+  tl.to('.bg-card',     { opacity: 0, duration: 0.4, ease: 'power2.in' }, '<+=0.1');
+  tl.to('#glow',        { opacity: 0, duration: 0.3 }, '<');
+
+  /* Phase 7 — featured card flips in (86–97 %) */
+  tl.to('#featured-card', {
+    opacity: 1, scale: 1, rotationY: 0,
+    duration: 1.1, ease: 'back.out(1.3)',
+  }, '+=0.1');
+
+  tl.to('#glow', { opacity: 0.7, duration: 0.6 }, '<+=0.3');
+
+  /* Phase 8 — buy button rises (97–100 %) */
+  tl.to('#buy-btn', {
+    opacity: 1, y: 0,
+    duration: 0.8, ease: 'back.out(2)',
+  }, '+=0.2');
+</script>
+</body>
+</html>
