@@ -115,7 +115,14 @@
     <button class="btn-login" id="btnLogin">Login</button>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
+    const SUPABASE_URL  = 'https://igdqjrbnspufsahuoupq.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnZHFqcmJuc3B1ZnNhaHVvdXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODQxMTcsImV4cCI6MjA5NTg2MDExN30.QPdL9rP6TGoHLXNwHQO1IrrFyy57mXh5wTj_RzH9amA';
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    const ADMIN_EMAIL = 'rumandramajaytt@gmail.com'; // the email you create in Supabase Auth
+
     async function login() {
       const password = document.getElementById('password').value;
       const btn = document.getElementById('btnLogin');
@@ -125,25 +132,14 @@
       btn.textContent = 'Logging in…';
       errorMsg.textContent = '';
 
-      try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password }),
-        });
+      const { error } = await db.auth.signInWithPassword({ email: ADMIN_EMAIL, password });
 
-        if (res.ok) {
-          window.location.href = '/admin.html';
-        } else {
-          const data = await res.json();
-          errorMsg.textContent = data.error || 'Incorrect password.';
-          btn.disabled = false;
-          btn.textContent = 'Login';
-        }
-      } catch {
-        errorMsg.textContent = 'Could not connect to server.';
+      if (error) {
+        errorMsg.textContent = 'Incorrect password.';
         btn.disabled = false;
         btn.textContent = 'Login';
+      } else {
+        window.location.href = 'admin.html';
       }
     }
 

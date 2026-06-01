@@ -241,61 +241,78 @@
 
   <footer>&copy; 2026 Rum &amp; Ramajay. All rights reserved.</footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
+    const SUPABASE_URL  = 'https://igdqjrbnspufsahuoupq.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnZHFqcmJuc3B1ZnNhaHVvdXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODQxMTcsImV4cCI6MjA5NTg2MDExN30.QPdL9rP6TGoHLXNwHQO1IrrFyy57mXh5wTj_RzH9amA';
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    async function init() {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) {
+        window.location.href = 'login.html';
+        return;
+      }
+      loadOrders();
+      setInterval(loadOrders, 15000);
+    }
+
     async function loadOrders() {
       document.getElementById('orderCount').textContent = 'Loading orders…';
-      try {
-        const res = await fetch('/api/orders');
-        if (!res.ok) throw new Error('Server error');
-        const orders = await res.json();
 
-        const countEl = document.getElementById('orderCount');
-        const container = document.getElementById('tableContainer');
+      const { data: orders, error } = await db
+        .from('orders')
+        .select('*')
+        .order('submitted_at', { ascending: false });
 
-        countEl.textContent = `${orders.length} order${orders.length !== 1 ? 's' : ''} submitted`;
+      const countEl = document.getElementById('orderCount');
+      const container = document.getElementById('tableContainer');
 
-        if (orders.length === 0) {
-          container.innerHTML = '<p class="empty-state">No orders yet.</p>';
-          return;
-        }
-
-        container.innerHTML = `
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Contact</th>
-                <th>Qty</th>
-                <th>Total Price</th>
-                <th>Collection Day</th>
-                <th>Location</th>
-                <th>Submitted</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${orders.map(o => `
-                <tr>
-                  <td>${o.id}</td>
-                  <td>${esc(o.first_name)}</td>
-                  <td>${esc(o.last_name)}</td>
-                  <td>${esc(o.contact_number)}</td>
-                  <td>${o.quantity}</td>
-                  <td>$${(o.total_price ?? o.quantity * 300).toLocaleString()} TTD</td>
-                  <td>${esc(o.collection_day)}</td>
-                  <td>${esc(o.collection_location)}</td>
-                  <td>${new Date(o.submitted_at).toLocaleString()}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-      } catch (err) {
-        document.getElementById('orderCount').textContent = 'Error loading orders.';
-        document.getElementById('tableContainer').innerHTML =
-          '<p class="empty-state">Could not load orders. Make sure the server is running.</p>';
+      if (error) {
+        countEl.textContent = 'Error loading orders.';
+        container.innerHTML = '<p class="empty-state">Could not load orders.</p>';
+        return;
       }
+
+      countEl.textContent = `${orders.length} order${orders.length !== 1 ? 's' : ''} submitted`;
+
+      if (orders.length === 0) {
+        container.innerHTML = '<p class="empty-state">No orders yet.</p>';
+        return;
+      }
+
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Contact</th>
+              <th>Qty</th>
+              <th>Total Price</th>
+              <th>Collection Day</th>
+              <th>Location</th>
+              <th>Submitted</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${orders.map(o => `
+              <tr>
+                <td>${o.id}</td>
+                <td>${esc(o.first_name)}</td>
+                <td>${esc(o.last_name)}</td>
+                <td>${esc(o.contact_number)}</td>
+                <td>${o.quantity}</td>
+                <td>$${(o.total_price ?? o.quantity * 300).toLocaleString()} TTD</td>
+                <td>${esc(o.collection_day)}</td>
+                <td>${esc(o.collection_location)}</td>
+                <td>${new Date(o.submitted_at).toLocaleString()}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
     }
 
     function esc(str) {
@@ -307,12 +324,11 @@
     }
 
     async function logout() {
-      await fetch('/api/logout', { method: 'POST' });
-      window.location.href = '/login.html';
+      await db.auth.signOut();
+      window.location.href = 'login.html';
     }
 
-    loadOrders();
-    setInterval(loadOrders, 15000);
+    init();
   </script>
 </body>
 </html>
