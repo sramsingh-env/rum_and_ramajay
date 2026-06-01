@@ -684,6 +684,12 @@
     <span>18+ Only &nbsp;|&nbsp; Drink Responsibly</span>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    const SUPABASE_URL  = 'https://igdqjrbnspufsahuoupq.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnZHFqcmJuc3B1ZnNhaHVvdXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODQxMTcsImV4cCI6MjA5NTg2MDExN30.QPdL9rP6TGoHLXNwHQO1IrrFyy57mXh5wTj_RzH9amA'; // get from Supabase → Project Settings → API → anon public
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  </script>
   <script>
     /* ── Quantity controls ── */
     const UNIT_PRICE = 300;
@@ -927,25 +933,20 @@
       btn.textContent = 'Submitting…';
 
       try {
-        const res = await fetch('/api/order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            firstName,
-            lastName,
-            contactNumber,
-            collectionDay: `${entry.name}, ${entry.date}`,
-            collectionLocation: entry.location,
-            deliveryFee: entry.fee,
-            quantity: qty,
-            totalPrice: UNIT_PRICE * qty + entry.fee,
-          }),
-        });
+        const { error: dbError } = await db
+          .from('orders')
+          .insert({
+            first_name:          firstName,
+            last_name:           lastName,
+            contact_number:      contactNumber,
+            collection_day:      `${entry.name}, ${entry.date}`,
+            collection_location: entry.location,
+            delivery_fee:        entry.fee,
+            quantity:            qty,
+            total_price:         UNIT_PRICE * qty + entry.fee,
+          });
 
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || 'Server error');
-        }
+        if (dbError) throw new Error(dbError.message);
 
         document.getElementById('productCard').style.display = 'none';
         document.getElementById('successMsg').classList.add('visible');
