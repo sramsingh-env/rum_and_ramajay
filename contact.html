@@ -185,14 +185,14 @@
 
     .sign-q {
       font-family: 'Lilita One', sans-serif;
-      font-size: 46px; /* 3.2vw */
+      font-size: 48px;
       color: #c01000;
       text-align: center;
     }
 
     .sign-sub {
       font-family: 'Georgia', serif;
-      font-size: 23px; /* 1.6vw */
+      font-size: 24px;
       color: #2a0800;
       font-style: italic;
       padding-top: 2%;
@@ -201,16 +201,16 @@
 
     .sign-hr {
       border: none;
-      border-top: 3px solid #3a1500; /* 0.22vw */
+      border-top: 3px solid #3a1500;
       width: 100%;
-      margin: 9px 0 17px; /* 0.6vw 0 1.2vw */
+      margin: 6px 0 11px;
     }
 
     .sign-item {
       display: flex;
       align-items: flex-start;
-      gap: 11px; /* 0.75vw */
-      margin-bottom: 11px; /* 0.75vw */
+      gap: 10px;
+      margin-bottom: 9px;
     }
 
     .sign-item:last-child { margin-bottom: 0; }
@@ -218,14 +218,14 @@
     .s-icon {
       flex-shrink: 0;
       background: #3d1800;
-      border-radius: 7px; /* 0.5vw */
-      width: 43px; /* 3vw */
-      height: 43px; /* 3vw */
+      border-radius: 5px;
+      width: 42px;
+      height: 42px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #F5C000;
-      margin-top: 5%;
+      margin-top: 2%;
     }
 
     .s-icon svg { width: 58%; height: 58%; }
@@ -233,13 +233,13 @@
     .s-info {
       display: flex;
       flex-direction: column;
-      gap: 2px; /* 0.15vw */
-      margin-top: 5%;
+      gap: 1px;
+      margin-top: 2%;
     }
 
     .s-label {
       font-family: 'Lilita One', sans-serif;
-      font-size: 19px; /* 1.35vw */
+      font-size: 17px;
       color: #c01000;
       letter-spacing: 0.04em;
       line-height: 1;
@@ -247,11 +247,11 @@
 
     .s-val {
       font-family: 'Georgia', serif;
-      font-size: 17px; /* 1.2vw */
+      font-size: 16px;
       color: #1a0500;
       text-decoration: none;
       line-height: 1.3;
-      word-break: break-all;
+      white-space: nowrap;
     }
 
     .s-val:hover { color: #c01000; text-decoration: underline; }
@@ -491,8 +491,8 @@
       .s-val     { font-size: 0.52rem; font-weight: bold; white-space: nowrap; word-break: normal; }
 
       /* Crappo: order 4, static */
-      .crappo-wrap { order: 4; position: static !important; display: flex; justify-content: center; margin-bottom: 0; }
-      .crappo-img  { width: 45%; height: auto; }
+      .crappo-wrap { order: 4; position: static !important; display: flex; justify-content: flex-end; margin-bottom: -12px; padding-right: 0; }
+      .crappo-img  { width: 70%; height: auto; }
 
       /* Info bar */
       .info-bar { flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 16px; font-size: 0.8rem; }
@@ -563,6 +563,7 @@
               <div class="s-info">
                 <span class="s-label">WHATSAPP / CALL:</span>
                 <a class="s-val" href="tel:+18687659673">1-868-765-9673</a>
+                <a class="s-val" href="tel:+18683321395">1-868-332-1395</a>
               </div>
             </div>
 
