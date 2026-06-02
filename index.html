@@ -43,7 +43,6 @@
       height: auto;
       display: block;
       filter: drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.5));
-      align-items: center;
     }
 
     .slogan {
@@ -54,7 +53,6 @@
       text-transform: uppercase;
       filter: drop-shadow(1px 2px 4px rgba(0, 0, 0, 0.5));
       margin-top: 10px;
-      align-items: center;
     }
 
     main {
@@ -236,7 +234,7 @@
     /* About Us */
     .about {
       width: 100%;
-      padding: 60px 48px;
+      padding: 60px 84px;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
@@ -261,11 +259,46 @@
     }
 
     .about-heading {
-      font-family: 'Lilita One', sans-serif;
+      font-family: 'Georgia', serif;
       font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: bold;
       color: #7A4220;
       letter-spacing: 0.04em;
       line-height: 1.15;
+    }
+
+    .about-wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .about-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
+      max-width: 100%;
+    }
+
+    .about-images {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+      padding-right: 48px;
+    }
+
+    .about-chair {
+      width: 330px;
+      height: auto;
+    }
+
+    .about-sell {
+      width: 80px;
+      height: auto;
     }
 
     .about-body {
@@ -273,7 +306,8 @@
       font-size: clamp(1rem, 2vw, 1.15rem);
       color: #1a0500;
       line-height: 1.8;
-      max-width: 560px;
+      max-width: 100%;
+      text-align: justify;
     }
 
     .about-cta {
@@ -322,13 +356,17 @@
       .carousel-btn { width: 36px; height: 36px; font-size: 1.2rem; }
 
       /* About */
-      .about { padding: 32px 16px; gap: 14px; }
+      .about-wrap { flex-direction: column; align-items: center; }
+      .about { padding: 32px 16px; gap: 14px; align-items: center; text-align: center; }
+      .about-content { align-items: center; }
+      .about-images { padding-right: 0; gap: 12px; }
+      .about-chair, .about-sell { width: 45%; max-width: 160px; }
       .about-label { font-size: 1.6rem; }
       .about-divider { width: 150px; }
       .about-body { max-width: 100%; }
 
       /* Info bar — stack vertically */
-      .info-bar { flex-direction: column; align-items: flex-start; gap: 6px; padding: 16px; font-size: 0.8rem; }
+      .info-bar { flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 16px; font-size: 0.8rem; }
     }
   </style>
 </head>
@@ -379,13 +417,20 @@
 
   </main>
 
-  <section class="about" id="about">
-    <p class="about-label">About Us</p>
-    <div class="about-divider"></div>
-    <h2 class="about-heading">A Trini Bacchanal in a Box</h2>
-    <p class="about-body">Rum &amp; Ramajay brings the spirit of Trinidad to your table. Packed with sweet talk and real bacchanal, this Trini-inspired drinking card game is designed to keep the vibes flowing.</p>
-    <p class="about-body about-cta">So bring yuh crew and ready yuh rum!</p>
-  </section>
+  <div class="about-wrap">
+    <section class="about" id="about">
+      <p class="about-label">About Us</p>
+      <div class="about-divider"></div>
+      <div class="about-content">
+        <h2 class="about-heading">A Trini Bacchanal in a Box</h2>
+        <p class="about-body">Rum &amp; Ramajay brings the spirit of Trinidad to your table. Packed with sweet talk and real bacchanal, this Trini-inspired drinking card game is designed to keep the vibes flowing.</p>
+        <p class="about-body about-cta">So bring yuh crew and ready yuh rum!</p>
+      </div>
+    </section>
+    <div class="about-images">
+      <img src="images/chair3.png" alt="" class="about-chair" aria-hidden="true" />
+    </div>
+  </div>
 
   <footer class="info-bar">
     <span>&copy; 2025 Rum &amp; Ramajay. All rights reserved.</span>
@@ -463,6 +508,21 @@
         navHome.classList.add('active');
       }
     }, { passive: true });
+
+    // Constrain .about-content to the heading's rendered width
+    function syncAboutWidth() {
+      const heading = document.querySelector('.about-heading');
+      const content = document.querySelector('.about-content');
+      if (!heading || !content) return;
+      if (window.innerWidth <= 640) {
+        content.style.width = '';
+        return;
+      }
+      content.style.width = '';
+      content.style.width = heading.getBoundingClientRect().width + 'px';
+    }
+    document.fonts.ready.then(syncAboutWidth);
+    window.addEventListener('resize', syncAboutWidth);
 
     // Touch/swipe support
     let touchStartX = 0;

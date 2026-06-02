@@ -128,18 +128,36 @@
       const btn = document.getElementById('btnLogin');
       const errorMsg = document.getElementById('errorMsg');
 
+      if (!password) {
+        errorMsg.textContent = 'Please enter your password.';
+        return;
+      }
+
       btn.disabled = true;
       btn.textContent = 'Logging in…';
       errorMsg.textContent = '';
 
-      const { error } = await db.auth.signInWithPassword({ email: ADMIN_EMAIL, password });
+      try {
+        const { error } = await db.auth.signInWithPassword({ email: ADMIN_EMAIL, password });
 
-      if (error) {
-        errorMsg.textContent = 'Incorrect password.';
+        if (error) {
+          const msg = error.message || '';
+          if (msg.toLowerCase().includes('email not confirmed')) {
+            errorMsg.textContent = 'Email not confirmed — go to Supabase Dashboard → Authentication → Users and confirm the email first.';
+          } else if (msg.toLowerCase().includes('invalid login credentials') || msg.toLowerCase().includes('invalid email or password')) {
+            errorMsg.textContent = 'Incorrect password.';
+          } else {
+            errorMsg.textContent = msg || 'Login failed. Please try again.';
+          }
+          btn.disabled = false;
+          btn.textContent = 'Login';
+        } else {
+          window.location.href = 'admin.html';
+        }
+      } catch (err) {
+        errorMsg.textContent = 'Network error — check your connection and try again.';
         btn.disabled = false;
         btn.textContent = 'Login';
-      } else {
-        window.location.href = 'admin.html';
       }
     }
 

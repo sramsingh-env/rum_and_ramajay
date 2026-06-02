@@ -247,14 +247,19 @@
     const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnZHFqcmJuc3B1ZnNhaHVvdXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODQxMTcsImV4cCI6MjA5NTg2MDExN30.QPdL9rP6TGoHLXNwHQO1IrrFyy57mXh5wTj_RzH9amA';
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-    async function init() {
-      const { data: { session } } = await db.auth.getSession();
-      if (!session) {
-        window.location.href = 'login.html';
-        return;
-      }
-      loadOrders();
-      setInterval(loadOrders, 15000);
+    function init() {
+      db.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'INITIAL_SESSION') {
+          if (!session) {
+            window.location.href = 'login.html';
+            return;
+          }
+          await loadOrders();
+          setInterval(loadOrders, 15000);
+        } else if (event === 'SIGNED_OUT') {
+          window.location.href = 'login.html';
+        }
+      });
     }
 
     async function loadOrders() {

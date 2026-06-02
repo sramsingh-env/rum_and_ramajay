@@ -35,7 +35,6 @@
       gap: 16px;
       background: transparent;
       flex-shrink: 0;
-      align-items: center;
     }
 
     .logo-img {
@@ -43,7 +42,6 @@
       height: auto;
       display: block;
       filter: drop-shadow(2px 3px 6px rgba(0,0,0,0.5));
-      align-items: center;
     }
 
     .slogan {
@@ -54,7 +52,6 @@
       text-transform: uppercase;
       filter: drop-shadow(1px 2px 4px rgba(0, 0, 0, 0.5));
       margin-top: 10px;
-      align-items: center;
     }
 
     /* ── Navbar ── */
@@ -566,7 +563,7 @@
       .success-msg p { font-size: 1.1rem; }
 
       /* Info bar */
-      .info-bar { flex-direction: column; align-items: flex-start; gap: 6px; padding: 16px; font-size: 0.8rem; }
+      .info-bar { flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 16px; font-size: 0.8rem; }
     }
   </style>
 </head>
@@ -849,7 +846,7 @@
     weekDates.forEach((entry, i) => {
       const opt = document.createElement('option');
       opt.value = i;
-      opt.textContent = entry.location;
+      opt.textContent = entry.fee === 0 ? `${entry.location} — Free` : `${entry.location} — $${entry.fee} TTD`;
       select.appendChild(opt);
     });
 
